@@ -5,11 +5,10 @@ import exceptions.VidaUtilInsuficienteException;
 
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class CocinaSvc implements Callable<Void> {
+public class CocinaSvc {
 
     private static CocinaSvc instance = null;
     List<Chef> chefsLuneasAJueves; // 3 Chefs
@@ -30,7 +29,7 @@ public class CocinaSvc implements Callable<Void> {
         if (instance == null) {
             instance = new CocinaSvc();
         }
-        return instance;
+        return  instance;
     }
     public void agregarRecetasParaPreparar(List<Cocinable> recetas){
         recetasAPreparar.addAll(recetas);
@@ -38,7 +37,9 @@ public class CocinaSvc implements Callable<Void> {
     public void prepararPlatilloChefsLuneasAJueves(List<Cocinable> recetasPorCocinar){
         ExecutorService executorServiceLunesAJueves  = Executors.newFixedThreadPool(3);
         for (int i = 0; i < chefsLuneasAJueves.size(); i++){
-            executorServiceLunesAJueves.submit(getInstance());
+            Chef chef = chefsLuneasAJueves.get(i);
+            chef.setRecetas(recetasPorCocinar);
+            executorServiceLunesAJueves.submit(chef);
         }
         executorServiceLunesAJueves.shutdown();
     }
@@ -46,13 +47,11 @@ public class CocinaSvc implements Callable<Void> {
     public void prepararPlatilloChefsViernesADomingoYFeriados(List<Cocinable> recetasPorCocinar){
         ExecutorService executorServiceViernesADomingoYFeriados  = Executors.newFixedThreadPool(5);
         for (int i = 0; i < chefsViernesADomingoYFeriados.size(); i++){
-            executorServiceViernesADomingoYFeriados.submit(getInstance());
+            Chef chef = chefsViernesADomingoYFeriados.get(i);
+            chef.setRecetas(recetasPorCocinar);
+            executorServiceViernesADomingoYFeriados.submit(chef);
         }
         executorServiceViernesADomingoYFeriados.shutdown();
-    }
-
-    private void preparPlatillos(List<Cocinable> recetasPorCocinar) throws  Exception{
-
     }
 
     private void disminuirVidaUtil(Cocinable cocinable) throws VidaUtilInsuficienteException {
@@ -62,9 +61,4 @@ public class CocinaSvc implements Callable<Void> {
 
     }
 
-
-    @Override
-    public Void call() throws Exception {
-        preparPlatillos(recetasAPreparar);
-    }
 }
